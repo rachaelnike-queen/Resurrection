@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <head>
 
   <meta charset="UTF-8" />
@@ -332,31 +332,16 @@
 
     function parseCSV(csvText) {
 
-      const lines =
-        csvText.split("\n");
+  Papa.parse(csvText, {
 
-      const headers =
-        lines[0]
-          .split(",")
-          .map(h => h.trim());
+    header: true,
+    skipEmptyLines: true,
+
+    complete: function(results) {
 
       D = [];
 
-      for (let i = 1; i < lines.length; i++) {
-
-        const row =
-          lines[i].split(",");
-
-        if (row.length < 2) continue;
-
-        const item = {};
-
-        headers.forEach((header, index) => {
-
-          item[header] =
-            row[index]?.trim() || "";
-
-        });
+      results.data.forEach(item => {
 
         item.t =
 
@@ -374,20 +359,45 @@
 
           item["Item Title"] ||
 
-          "Untitled Listing";
+          "";
+
+
+        // CLEAN BAD TITLES
+
+        if (
+
+          !item.t ||
+
+          item.t.length < 5 ||
+
+          /^\d+$/.test(item.t) ||
+
+          item.t.toLowerCase().includes("no damage") ||
+
+          item.t.toLowerCase().includes("healthy") ||
+
+          item.t.toLowerCase().includes("side splits")
+
+        ) {
+
+          return;
+
+        }
 
 
         processInventoryItem(item);
 
         D.push(item);
 
-      }
+      });
 
       renderInventory(D);
 
     }
 
+  });
 
+}
     function renderInventory(items) {
 
       const app =
