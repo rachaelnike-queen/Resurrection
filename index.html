@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>FBP Resurrection OS</title>
+
+  <style>
+
+    body {
+      margin: 0;
+      padding: 40px;
+      background: #0d0d0d;
+      color: #f2f2f2;
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      font-size: 2.4rem;
+      letter-spacing: 2px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .upload-btn,
+    .toolbar button {
+
+      background: #1f1f1f;
+      color: white;
+      border: 1px solid #333;
+      padding: 12px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: .9rem;
+    }
+
+    .upload-btn:hover,
+    .toolbar button:hover {
+
+      background: #2a2a2a;
+
+    }
+
+    #app {
+
+      display: grid;
+      grid-template-columns:
+      repeat(auto-fill, minmax(320px, 1fr));
+
+      gap: 24px;
+
+    }
+
+    .card {
+
+      background: #151515;
+      border: 1px solid #2a2a2a;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 0 20px rgba(0,0,0,.35);
+
+    }
+
+    .card h2 {
+
+      margin-top: 0;
+      color: #d8c3c3;
+      font-size: 1.1rem;
+
+    }
+
+    .tag {
+
+      display: inline-block;
+      margin: 4px;
+      padding: 6px 12px;
+      background: #222;
+      border-radius: 999px;
+      font-size: .75rem;
+
+    }
+
+    .sold {
+
+      color: #ff7d7d;
+
+    }
+
+    .active {
+
+      color: #8dffb3;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <h1>🦇 FBP Resurrection OS</h1>
+
+  <div class="toolbar">
+
+    <label class="upload-btn">
+
+      Upload Vendoo CSV
+
+      <input
+        type="file"
+        id="csvFile"
+        accept=".csv"
+        hidden
+      />
+
+    </label>
+
+    <button id="showAllBtn">
+      All Listings
+    </button>
+
+    <button id="showSoldBtn">
+      Sold
+    </button>
+
+    <button id="showHeroBtn">
+      Hero
+    </button>
+
+    <button id="showRelistBtn">
+      Relist Today
+    </button>
+
+  </div>
+
+  <div id="app"></div>
+
+  <script>
+
+    // ─────────────────────────────
+    // GLOBAL DATA
+    // ─────────────────────────────
+
+    let D = [];
+
+
+    // ─────────────────────────────
+    // STYLE SYSTEM
+    // ─────────────────────────────
+
+    const BLACK_POPPY_STYLE_SYSTEM = {
+
+      styleWorlds: [
+
+        "Black Poppy Archive",
+        "Whimsy Goth",
+        "Goth Corp",
+        "CBK Ghost Prep",
+        "Laura Ashley Bloom",
+        "Rain Witch",
+        "Velvet Funeral",
+        "Overall Girl Utility",
+        "Midnight Garden Party"
+
+      ],
+
+      coreAesthetics: [
+
+        "Gothcore",
+        "Preppy Noir",
+        "Corpcore",
+        "Office Siren",
+        "Archivecore",
+        "Cottagegore",
+        "Romantic Goth",
+        "Mall Goth Revival"
+
+      ]
+
+    };
+
+
+    // ─────────────────────────────
+    // STYLE DETECTION
+    // ─────────────────────────────
+
+    function detectStyleWorld(title = "") {
+
+      const t = title.toLowerCase();
+
+      if (
+        t.includes("velvet") ||
+        t.includes("lace")
+      ) return "Velvet Funeral";
+
+      if (
+        t.includes("office") ||
+        t.includes("blazer")
+      ) return "Goth Corp";
+
+      if (
+        t.includes("prairie") ||
+        t.includes("floral")
+      ) return "Laura Ashley Bloom";
+
+      if (
+        t.includes("overall")
+      ) return "Overall Girl Utility";
+
+      if (
+        t.includes("y2k")
+      ) return "Mall Goth Revival";
+
+      if (
+        t.includes("prep") ||
+        t.includes("minimal")
+      ) return "CBK Ghost Prep";
+
+      return "Black Poppy Archive";
+
+    }
+
+
+    // ─────────────────────────────
+    // CORE DETECTION
+    // ─────────────────────────────
+
+    function detectCoreAesthetic(title = "") {
+
+      const t = title.toLowerCase();
+
+      if (t.includes("goth"))
+        return "Gothcore";
+
+      if (
+        t.includes("office") ||
+        t.includes("blazer")
+      )
+        return "Corpcore";
+
+      if (
+        t.includes("lace")
+      )
+        return "Romantic Goth";
+
+      if (
+        t.includes("prep")
+      )
+        return "Preppy Noir";
+
+      return "Archivecore";
+
+    }
+
+
+    // ─────────────────────────────
+    // HERO SCORE
+    // ─────────────────────────────
+
+    function calculateHeroScore(title = "") {
+
+      const t = title.toLowerCase();
+
+      let score = 0;
+
+      const heroTerms = [
+
+        "velvet",
+        "lace",
+        "corset",
+        "floral",
+        "goth",
+        "mesh",
+        "leather",
+        "blazer",
+        "overall"
+
+      ];
+
+      heroTerms.forEach(term => {
+
+        if (t.includes(term)) {
+          score++;
+        }
+
+      });
+
+      return score;
+
+    }
+
+
+    // ─────────────────────────────
+    // SOLD DETECTION
+    // ─────────────────────────────
+
+    function detectSoldStatus(item) {
+
+      const status =
+        (
+          item.Status ||
+          item.status ||
+          ""
+        ).toLowerCase();
+
+      return status.includes("sold");
+
+    }
+
+
+    // ─────────────────────────────
+    // RELIST DETECTION
+    // ─────────────────────────────
+
+    function detectRelistStatus(item) {
+
+      return (
+        !item.isSold &&
+        item.heroScore >= 2
+      );
+
+    }
+
+
+    // ─────────────────────────────
+    // PROCESS ITEM
+    // ─────────────────────────────
+
+    function processInventoryItem(item) {
+
+      item.autoStyleWorld =
+        detectStyleWorld(item.t);
+
+      item.autoCore =
+        detectCoreAesthetic(item.t);
+
+      item.heroScore =
+        calculateHeroScore(item.t);
+
+      item.isSold =
+        detectSoldStatus(item);
+
+      item.needsRelist =
+        detectRelistStatus(item);
+
+    }
+
+
+    // ─────────────────────────────
+    // CSV IMPORT
+    // ─────────────────────────────
+
+    document
+      .getElementById("csvFile")
+      .addEventListener("change", handleCSVUpload);
+
+
+    function handleCSVUpload(event) {
+
+      const file =
+        event.target.files[0];
+
+      if (!file) return;
+
+      const reader =
+        new FileReader();
+
+      reader.onload = function(e) {
+
+        parseCSV(e.target.result);
+
+      };
+
+      reader.readAsText(file);
+
+    }
+
+
+    function parseCSV(csvText) {
+
+      const lines =
+        csvText.split("\n");
+
+      const headers =
+        lines[0].split(",");
+
+      D = [];
+
+      for (let i = 1; i < lines.length; i++) {
+
+        const row =
+          lines[i].split(",");
+
+        if (row.length < 2) continue;
+
+        const item = {};
+
+        headers.forEach((header, index) => {
+
+          item[
+            header.trim()
+          ] = row[index]?.trim();
+
+        });
+
+        item.t =
+          item.Title ||
+          item.title ||
+          "Untitled Listing";
+
+        processInventoryItem(item);
+
+        D.push(item);
+
+      }
+
+      renderInventory(D);
+
+    }
+
+
+    // ─────────────────────────────
+    // RENDER
+    // ─────────────────────────────
+
+    function renderInventory(items) {
+
+      const app =
+        document.getElementById("app");
+
+      app.innerHTML = "";
+
+      items.forEach(item => {
+
+        const card =
+          document.createElement("div");
+
+        card.className = "card";
+
+        card.innerHTML = `
+
+          <h2>${item.t}</h2>
+
+          <p>
+            <strong>Style World:</strong>
+            ${item.autoStyleWorld}
+          </p>
+
+          <p>
+            <strong>Core:</strong>
+            ${item.autoCore}
+          </p>
+
+          <p>
+            <strong>Hero Score:</strong>
+            ${item.heroScore}
+          </p>
+
+          <p>
+            <strong>Status:</strong>
+
+            <span class="${
+              item.isSold
+              ? 'sold'
+              : 'active'
+            }">
+
+              ${
+                item.isSold
+                ? 'SOLD'
+                : 'ACTIVE'
+              }
+
+            </span>
+
+          </p>
+
+        `;
+
+        app.appendChild(card);
+
+      });
+
+    }
+
+
+    // ─────────────────────────────
+    // FILTER BUTTONS
+    // ─────────────────────────────
+
+    document
+      .getElementById("showAllBtn")
+      .addEventListener("click", () => {
+
+        renderInventory(D);
+
+      });
+
+
+    document
+      .getElementById("showSoldBtn")
+      .addEventListener("click", () => {
+
+        const sold =
+          D.filter(i => i.isSold);
+
+        renderInventory(sold);
+
+      });
+
+
+    document
+      .getElementById("showHeroBtn")
+      .addEventListener("click", () => {
+
+        const hero =
+          D.filter(i => i.heroScore >= 2);
+
+        renderInventory(hero);
+
+      });
+
+
+    document
+      .getElementById("showRelistBtn")
+      .addEventListener("click", () => {
+
+        const relist =
+          D.filter(i => i.needsRelist);
+
+        renderInventory(relist);
+
+      });
+
+  </script>
+
+</body>
+
+</html>
