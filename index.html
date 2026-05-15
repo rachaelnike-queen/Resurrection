@@ -532,7 +532,25 @@ function parseCSV(csvText) {
           </p>
 
         `;
+<div class="action-buttons">
 
+  <button
+    class="relist-btn"
+    onclick="markRelisted('${item.t}')">
+
+    Relisted
+
+  </button>
+
+  <button
+    class="sold-btn"
+    onclick="markSold('${item.t}')">
+
+    Sold
+
+  </button>
+
+</div>
         app.appendChild(card);
 
       });
