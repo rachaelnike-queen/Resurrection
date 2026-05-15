@@ -78,17 +78,6 @@
 
     }
 
-    .tag {
-
-      display: inline-block;
-      margin: 4px;
-      padding: 6px 12px;
-      background: #222;
-      border-radius: 999px;
-      font-size: .75rem;
-
-    }
-
     .sold {
 
       color: #ff7d7d;
@@ -98,6 +87,40 @@
     .active {
 
       color: #8dffb3;
+
+    }
+
+    .action-buttons {
+
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+
+    }
+
+    .relist-btn,
+    .sold-btn {
+
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: .8rem;
+      font-weight: bold;
+
+    }
+
+    .relist-btn {
+
+      background: #4b3b24;
+      color: #ffd27d;
+
+    }
+
+    .sold-btn {
+
+      background: #3a1d1d;
+      color: #ff8c8c;
 
     }
 
@@ -146,84 +169,7 @@
 
   <script>
 
-    // ─────────────────────────────
-    // GLOBAL DATA
-    // ─────────────────────────────
-
     let D = [];
-
-
-    // ─────────────────────────────
-    // STYLE SYSTEM
-    // ─────────────────────────────
-
-    const BLACK_POPPY_STYLE_SYSTEM = {
-
-      styleWorlds: [
-
-        "Black Poppy Archive",
-        "Whimsy Goth",
-        "Goth Corp",
-        "CBK Ghost Prep",
-        "Laura Ashley Bloom",
-        "Rain Witch",
-        "Velvet Funeral",
-        "Overall Girl Utility",
-        "Midnight Garden Party"
-
-      ],
-
-      coreAesthetics: [
-
-        "Gothcore",
-        "Preppy Noir",
-        "Corpcore",
-        "Office Siren",
-        "Archivecore",
-        "Cottagegore",
-        "Romantic Goth",
-        "Mall Goth Revival"
-
-      ]
-.action-buttons {
-
-  display: flex;
-  gap: 10px;
-  margin-top: 18px;
-
-}
-
-.relist-btn,
-.sold-btn {
-
-  border: none;
-  padding: 10px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: .8rem;
-  font-weight: bold;
-
-}
-
-.relist-btn {
-
-  background: #4b3b24;
-  color: #ffd27d;
-
-}
-
-.sold-btn {
-
-  background: #3a1d1d;
-  color: #ff8c8c;
-
-}
-    };
-
-
-    // ─────────────────────────────
-    // STYLE DETECTION
-    // ─────────────────────────────
 
     function detectStyleWorld(title = "") {
 
@@ -248,23 +194,10 @@
         t.includes("overall")
       ) return "Overall Girl Utility";
 
-      if (
-        t.includes("y2k")
-      ) return "Mall Goth Revival";
-
-      if (
-        t.includes("prep") ||
-        t.includes("minimal")
-      ) return "CBK Ghost Prep";
-
       return "Black Poppy Archive";
 
     }
 
-
-    // ─────────────────────────────
-    // CORE DETECTION
-    // ─────────────────────────────
 
     function detectCoreAesthetic(title = "") {
 
@@ -293,10 +226,6 @@
 
     }
 
-
-    // ─────────────────────────────
-    // HERO SCORE
-    // ─────────────────────────────
 
     function calculateHeroScore(title = "") {
 
@@ -331,10 +260,6 @@
     }
 
 
-    // ─────────────────────────────
-    // SOLD DETECTION
-    // ─────────────────────────────
-
     function detectSoldStatus(item) {
 
       const status =
@@ -349,10 +274,6 @@
     }
 
 
-    // ─────────────────────────────
-    // RELIST DETECTION
-    // ─────────────────────────────
-
     function detectRelistStatus(item) {
 
       return (
@@ -362,10 +283,6 @@
 
     }
 
-
-    // ─────────────────────────────
-    // PROCESS ITEM
-    // ─────────────────────────────
 
     function processInventoryItem(item) {
 
@@ -386,10 +303,6 @@
 
     }
 
-
-    // ─────────────────────────────
-    // CSV IMPORT
-    // ─────────────────────────────
 
     document
       .getElementById("csvFile")
@@ -417,99 +330,63 @@
     }
 
 
-function parseCSV(csvText) {
+    function parseCSV(csvText) {
 
-  const lines =
-    csvText.split("\n");
+      const lines =
+        csvText.split("\n");
 
-  const headers =
-    lines[0]
-      .split(",")
-      .map(h => h.trim());
+      const headers =
+        lines[0]
+          .split(",")
+          .map(h => h.trim());
 
-  console.log("CSV HEADERS:", headers);
+      D = [];
 
-  D = [];
+      for (let i = 1; i < lines.length; i++) {
 
-  for (let i = 1; i < lines.length; i++) {
+        const row =
+          lines[i].split(",");
 
-    const row =
-      lines[i].split(",");
+        if (row.length < 2) continue;
 
-    if (row.length < 2) continue;
+        const item = {};
 
-    const item = {};
+        headers.forEach((header, index) => {
 
-    headers.forEach((header, index) => {
+          item[header] =
+            row[index]?.trim() || "";
 
-      item[header] =
-        row[index]?.trim() || "";
+        });
 
-    });
+        item.t =
 
-    // ─────────────────────────────
-    // FIXED TITLE MAPPING
-    // ─────────────────────────────
+          item["Custom Title"] ||
 
-    item.t =
+          item["Listing Title"] ||
 
-      item["Custom Title"] ||
+          item["Title"] ||
 
-      item["Listing Title"] ||
+          item["title"] ||
 
-      item["Title"] ||
+          item["Name"] ||
 
-      item["title"] ||
+          item["Product Name"] ||
 
-      item["Name"] ||
+          item["Item Title"] ||
 
-      item["Product Name"] ||
-
-      item["Item Title"] ||
-
-      "Untitled Listing";
+          "Untitled Listing";
 
 
-    // ─────────────────────────────
-    // CLEAN BAD TITLE FRAGMENTS
-    // ─────────────────────────────
+        processInventoryItem(item);
 
-    if (
-      item.t.length < 5 ||
-      item.t === "1600" ||
-      item.t === '1600"' ||
-      item.t.toLowerCase().includes("no damage") ||
-      item.t.toLowerCase().includes("healthy")
-    ) {
+        D.push(item);
 
-      item.t =
-        item["Description"] ||
-        item["description"] ||
-        "Untitled Listing";
+      }
+
+      renderInventory(D);
 
     }
 
-
-    // ─────────────────────────────
-    // PROCESS INVENTORY
-    // ─────────────────────────────
-
-    processInventoryItem(item);
-
-    D.push(item);
-
-  }
-
-  console.log("PARSED INVENTORY:", D);
-
-  renderInventory(D);
-
-}
-
-
-    // ─────────────────────────────
-    // RENDER
-    // ─────────────────────────────
 
     function renderInventory(items) {
 
@@ -545,44 +422,51 @@ function parseCSV(csvText) {
           </p>
 
           <p>
+
             <strong>Status:</strong>
 
             <span class="${
               item.isSold
-              ? 'sold'
-              : 'active'
+                ? 'sold'
+                : item.wasRelisted
+                  ? 'active'
+                  : 'active'
             }">
 
               ${
                 item.isSold
-                ? 'SOLD'
-                : 'ACTIVE'
+                  ? 'SOLD'
+                  : item.wasRelisted
+                    ? 'RELISTED'
+                    : 'ACTIVE'
               }
 
             </span>
 
           </p>
 
+          <div class="action-buttons">
+
+            <button
+              class="relist-btn"
+              onclick="markRelisted('${item.t}')">
+
+              Relisted
+
+            </button>
+
+            <button
+              class="sold-btn"
+              onclick="markSold('${item.t}')">
+
+              Sold
+
+            </button>
+
+          </div>
+
         `;
-<div class="action-buttons">
 
-  <button
-    class="relist-btn"
-    onclick="markRelisted('${item.t}')">
-
-    Relisted
-
-  </button>
-
-  <button
-    class="sold-btn"
-    onclick="markSold('${item.t}')">
-
-    Sold
-
-  </button>
-
-</div>
         app.appendChild(card);
 
       });
@@ -590,9 +474,33 @@ function parseCSV(csvText) {
     }
 
 
-    // ─────────────────────────────
-    // FILTER BUTTONS
-    // ─────────────────────────────
+    function markRelisted(title) {
+
+      const item =
+        D.find(i => i.t === title);
+
+      if (!item) return;
+
+      item.wasRelisted = true;
+
+      renderInventory(D);
+
+    }
+
+
+    function markSold(title) {
+
+      const item =
+        D.find(i => i.t === title);
+
+      if (!item) return;
+
+      item.isSold = true;
+
+      renderInventory(D);
+
+    }
+
 
     document
       .getElementById("showAllBtn")
